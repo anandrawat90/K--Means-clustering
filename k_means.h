@@ -18,8 +18,9 @@ class k_means
 
     private:
 
-    int no_of_clusters, no_of_points, means;
+    int no_of_clusters, no_of_points;
 
+    bool FLAG;
 
     double **points; //To store the points in co-ordinates
 

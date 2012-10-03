@@ -8,8 +8,9 @@ using namespace std;
 
 k_means::k_means(char fp[])
 {
+    FLAG=true;
     fstream file(fp);
-    file>>no_of_points>>no_of_clusters>>means;
+    file>>no_of_points>>no_of_clusters;
     int index,i;
 
     cluster= new double*[no_of_points];
@@ -39,7 +40,7 @@ k_means::k_means(char fp[])
         //Picking random index for the inital centroids
         index=(rand()%no_of_points);
 
-        //To make sure the points are never repeated
+        //making sure the no centroid is picked twice
         while(arindex[(index%no_of_clusters)]!=0)
         index++;
         arindex[(index%no_of_clusters)]++;
@@ -50,6 +51,14 @@ k_means::k_means(char fp[])
         //Assign y co-ordinate
         centroids[i][1]=points[index][1];
     }
+    /*
+    centroids[0][0] = 2;
+    centroids[0][1] = 10;
+    centroids[1][0] = 5;
+    centroids[1][1] = 8;
+    centroids[2][0] = 1;
+    centroids[2][1] = 2;
+    */
 
     file.close();
 }
@@ -82,18 +91,33 @@ double k_means::euclidean_distance(double x1, double y1, double x2, double y2)
 
 void k_means::clusterize()
 {
-    int steps=means;
-    while(steps>0)
+    int steps=1;
+    int old;
+    bool newFLAG,flag1;
+    while(FLAG)
     {
+        flag1=true;
+        newFLAG=true;
 
         for(int i=0;i<no_of_points;i++)
         {
+            old=int(cluster[i][no_of_clusters]);
+
             for(int j=0;j<no_of_clusters;j++)
             {
-                cluster[i][j]=euclidean_distance(points[i][0],points[i][1],centroids[j][0],centroids[j][1]); //Write the distance data for each centroid
+                //Write the distance data for each centroid
+                cluster[i][j]=euclidean_distance(points[i][0],points[i][1],centroids[j][0],centroids[j][1]);
             }
             //Set the respective centroid id
             minimum_of(cluster[i]);
+
+            // Mark if the centroid has changed
+            if(old==int(cluster[i][no_of_clusters]))
+            newFLAG=true;
+            else
+            newFLAG=false;
+
+            flag1 = flag1 & newFLAG;
         }
 
         //Print step wise
@@ -102,7 +126,10 @@ void k_means::clusterize()
         //Get the new centroids
         set_centroids();
 
-        steps--;
+        steps++;
+
+        //loop till there is no change in centroids
+        FLAG = !flag1;
     }
     for(int i=0;i<no_of_clusters;i++)
     {
@@ -135,7 +162,7 @@ void k_means::minimum_of(double temp[])
  void k_means::print(int step)
  {
      int i,j;
-     cout<<"STEP NO: "<<(means-step)+1<<endl;
+     cout<<"STEP NO: "<<step<<endl;
      for(i=0;i<no_of_points;i++)
      {
          cout<<"Point "<<i<<":  ";
